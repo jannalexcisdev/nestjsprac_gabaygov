@@ -2,6 +2,7 @@ import { Body, Controller , Post, Patch, Get, Delete, ValidationPipe, Param, Par
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginDto } from './dto/login.dto';
 
 
 @Controller('users')
@@ -14,10 +15,10 @@ export class UsersController {
       return this.usersService.createUser(createUserDto);
   }
   
-  // @Get()
-  // findAll() {
-  //     return this.usersService.findAll();
-  // }
+  @Get()
+  findAll() {
+      return this.usersService.findAll();
+  }
 
   // @Get(':id')
   // findOne(@Param('id', ParseIntPipe)id:number) {
@@ -25,9 +26,9 @@ export class UsersController {
   // }
 
   @Post('login')
-  async login(@Body() body: { username: string; password: string }) {
-    return this.usersService.login_user(body.username, body.password);
-  }
+  async login(@Body(ValidationPipe) loginDto:LoginDto) {
+    return this.usersService.login_user(loginDto);
+  }//WHITELISTING?
 
   @Patch(':id') 
   update_user(@Param('id', ParseIntPipe) id:number, @Body(ValidationPipe) updateUserDto: UpdateUserDto) {

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Param, ParseIntPipe } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, Param, ParseIntPipe } from '@nestjs/common';
 import { InputEmailDto } from './dto/input-email.dto';
 import { SubscriptionEmails } from './entities/emails.entity';
 import { Repository } from 'typeorm';
@@ -12,19 +12,24 @@ export class EmailsService {
     @InjectRepository(SubscriptionEmails)
     private readonly emailsRepository: Repository<SubscriptionEmails>) {}
     
-  async create_email(inputEmailDto:InputEmailDto) {
-    const new_email = this.emailsRepository.create(inputEmailDto)
-    return this.emailsRepository.save(new_email)
-  }
-
-  async findOne(id:number) {
-    return await this.emailsRepository.findOne({where: {id}})
+  create_email(inputEmailDto:InputEmailDto) {
+    try {
+      const new_email = this.emailsRepository.create(inputEmailDto)
+      return this.emailsRepository.save(new_email)
+    } catch (error) {
+      throw new InternalServerErrorException ('Failed to Add Email')
+    }
   }
 
   async delete_email(id:number) {
-    const existing_email = await this.findOne(id)
-    if (!existing_email) throw new NotFoundException ('Email Not Found')
-    return this.emailsRepository.remove(existing_email)
+    try {
+      const existing_email = await this.emailsRepository.findOne({where:{id}})
+      if (!existing_email) {
+        throw new NotFoundException ('Email Not Found')
+      }
+      return this.emailsRepository.remove(existing_email)
+    } catch (error) {
+      throw new InternalServerErrorException ('Failed to Delete Email')
+    }
   }
-
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
@@ -12,48 +12,61 @@ export class UsersService {
   constructor (
     @InjectRepository(OrganizationUsers)
     private readonly usersRepository: Repository<OrganizationUsers>) {}
-
   
   async createUser(createUserDto: CreateUserDto) {
-    const newUser = this.usersRepository.create(createUserDto);
-    return await this.usersRepository.save(newUser);
-  }
+    try {
+      const newUser = this.usersRepository.create(createUserDto);
+      return await this.usersRepository.save(newUser);
+    } catch (error) {
+      throw new InternalServerErrorException ('Failed to Create User')
+    }
+  } //DI SINASABI ERROR 
 
   async findAll() {
-    const user = await this.usersRepository.find()
-    if (!user) throw new NotFoundException('User Not Found')
-
-    return user
+    try {
+      const user = await this.usersRepository.find()
+      if (!user) {
+        throw new NotFoundException('User Not Found')
+      }
+      return user
+    } catch (error) {
+      throw new InternalServerErrorException ('Failed to Fetch User')
+    }
   }
 
-  async login_user(username: string, password: string) {
-    const user = await this.usersRepository.findOne({ where: { username, password } });
-    if (!user) throw new NotFoundException('User Not Found');
-    return user;
-  }
-
-  async findOne(id: number) {
-    const user = await this.usersRepository.findOne({where: {id}})
-
-    if (!user) throw new NotFoundException('User Not Found')
-
-    return user
+  async login_user(loginDto: LoginDto) {
+    const { username, password } = loginDto;
+    try {
+      const user = await this.usersRepository.findOne({ where: { username, password } });
+      if (!user) throw new NotFoundException('User Not Found');
+      return user;
+    }catch (error) {
+      throw new InternalServerErrorException ('Failed to Login User')
+    }
   }
 
   async update(id:number, updateUserDto: UpdateUserDto) {
-    const user = await this.findOne(id);
-    if (!user) {
-        throw new NotFoundException(`User with id ${id} not found`);
+    try {
+      const user = await this.usersRepository.findOne({where:{id}});
+      if (!user) {
+          throw new NotFoundException(`User with id ${id} not found`);
+      }
+      Object.assign(user, updateUserDto);
+      return this.usersRepository.save(user);
+    }catch (error) {
+      throw new InternalServerErrorException ('Failed to Update User')
     }
-    Object.assign(user, updateUserDto);
-    return await this.usersRepository.save(user);
-  }
+  } //ALWAYS SUCCESS KET WALA NANG NAUUPDATE
 
   async delete(id:number) {
-    const user = await this.findOne(id);
-    if (!user) {
-        throw new NotFoundException(`User with id ${id} not found`)
+    try {
+      const user = await this.usersRepository.findOne({where:{id}});
+      if (!user) {
+          throw new NotFoundException(`User with id ${id} not found`)
+      }
+      return this.usersRepository.remove(user)
+    } catch (error) {
+      throw new InternalServerErrorException ('Failed to Delete User')
     }
-    return this.usersRepository.remove(user)
   }
 }
