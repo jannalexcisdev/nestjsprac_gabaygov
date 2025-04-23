@@ -7,9 +7,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrganizationUsers } from './users/entities/users.entity';
 import { Events } from './events/entities/events.entity';
+import { EmailsModule } from './emails/emails.module';
+import { SubscriptionEmails } from './emails/entities/emails.entity';
+import { AssetsModule } from './assets/assets.module';
 
 @Module({
-  imports: [UsersModule, EventsModule, 
+  imports: [UsersModule, EventsModule, SubscriptionEmails,
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -21,10 +24,12 @@ import { Events } from './events/entities/events.entity';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME'),
-        entities: [OrganizationUsers, Events],
+        entities: [OrganizationUsers, Events, SubscriptionEmails],
         synchronize:true
       })
-    })],
+    }),
+    EmailsModule,
+    AssetsModule],
   controllers: [AppController],
   providers: [AppService],
 })
