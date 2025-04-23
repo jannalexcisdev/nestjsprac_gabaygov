@@ -1,10 +1,11 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, ConflictException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrganizationUsers } from './entities/users.entity';
 import { LoginDto } from './dto/login.dto';
+import { subscribe } from 'diagnostics_channel';
 
 @Injectable()
 export class UsersService {
@@ -12,15 +13,29 @@ export class UsersService {
   constructor (
     @InjectRepository(OrganizationUsers)
     private readonly usersRepository: Repository<OrganizationUsers>) {}
-  
+
   async createUser(createUserDto: CreateUserDto) {
+    if (await this.check_email(createUserDto.email)) {
+      throw new ConflictException('Email already exists');
+    }
+    if (await this.check_username(createUserDto.username)) {
+      throw new ConflictException('username already exists');
+    }
     try {
       const newUser = this.usersRepository.create(createUserDto);
       return await this.usersRepository.save(newUser);
     } catch (error) {
-      throw new InternalServerErrorException ('Failed to Create User')
+      throw new InternalServerErrorException('Failed to Create User');
     }
-  } //DI SINASABI ERROR 
+  }
+
+  async check_email (subscriber_email:string) {
+    return await this.usersRepository.findOne({ where: { email: subscriber_email } })
+  }
+
+  async check_username (subscriber_username:string) {
+    return await this.usersRepository.findOne({ where: { username: subscriber_username } })
+  }
 
   async findAll() {
     try {
@@ -51,12 +66,17 @@ export class UsersService {
       if (!user) {
           throw new NotFoundException(`User with id ${id} not found`);
       }
+      const before = JSON.stringify(user);
       Object.assign(user, updateUserDto);
-      return this.usersRepository.save(user);
+      const after = JSON.stringify(user);
+      if (before === after) {
+        throw new ConflictException('No changes detected');
+      }
+      return await this.usersRepository.save(user);
     }catch (error) {
       throw new InternalServerErrorException ('Failed to Update User')
     }
-  } //ALWAYS SUCCESS KET WALA NANG NAUUPDATE
+  }
 
   async delete(id:number) {
     try {
