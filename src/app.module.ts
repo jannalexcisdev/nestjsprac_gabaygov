@@ -10,6 +10,7 @@ import { Events } from './events/entities/events.entity';
 import { EmailsModule } from './emails/emails.module';
 import { SubscriptionEmails } from './emails/entities/emails.entity';
 import { AssetsModule } from './assets/assets.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [UsersModule, EventsModule, SubscriptionEmails,
@@ -29,7 +30,8 @@ import { AssetsModule } from './assets/assets.module';
       })
     }),
     EmailsModule,
-    AssetsModule],
+    AssetsModule,
+    AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })

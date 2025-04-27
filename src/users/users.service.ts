@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OrganizationUsers } from './entities/users.entity';
 import { LoginDto } from './dto/login.dto';
 import { subscribe } from 'diagnostics_channel';
+import { encodePassword } from 'src/utils/bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -22,7 +23,8 @@ export class UsersService {
       throw new ConflictException('username already exists');
     }
     try {
-      const newUser = this.usersRepository.create(createUserDto);
+      const password = encodePassword(createUserDto.password);
+      const newUser = this.usersRepository.create({...createUserDto, password});
       return await this.usersRepository.save(newUser);
     } catch (error) {
       throw new InternalServerErrorException('Failed to Create User');
