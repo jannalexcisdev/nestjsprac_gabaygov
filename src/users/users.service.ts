@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrganizationUsers } from './entities/users.entity';
 import { LoginDto } from './dto/login.dto';
-import { subscribe } from 'diagnostics_channel';
 import { encodePassword } from 'src/utils/bcrypt';
 
 @Injectable()
@@ -51,16 +50,16 @@ export class UsersService {
     }
   }
 
-  async login_user(loginDto: LoginDto) {
-    const { username, password } = loginDto;
-    try {
-      const user = await this.usersRepository.findOne({ where: { username, password } });
-      if (!user) throw new NotFoundException('User Not Found');
-      return user;
-    }catch (error) {
-      throw new InternalServerErrorException ('Failed to Login User')
-    }
-  }
+  // async login_user(loginDto: LoginDto) {
+  //   const { username, password } = loginDto;
+  //   try {
+  //     const user = await this.usersRepository.findOne({ where: { username, password } });
+  //     if (!user) throw new NotFoundException('User Not Found');
+  //     return user;
+  //   }catch (error) {
+  //     throw new InternalServerErrorException ('Failed to Login User')
+  //   }
+  // }
 
   async update(id:number, updateUserDto: UpdateUserDto) {
     try {
@@ -90,5 +89,17 @@ export class UsersService {
     } catch (error) {
       throw new InternalServerErrorException ('Failed to Delete User')
     }
+  }
+
+  async findOneByUsername(username:string) {
+    // try {
+      return await this.usersRepository.findOne({ where: { username } });
+//       if(!user) {
+//         throw new NotFoundException(`User with id ${username} not found`)
+//       }
+//       return user
+//     } catch (error) {
+//       throw new InternalServerErrorException ('Failed to Find User')
+//     }
   }
 }

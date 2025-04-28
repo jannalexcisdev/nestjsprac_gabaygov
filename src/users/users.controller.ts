@@ -25,10 +25,10 @@ export class UsersController {
   //     return this.usersService.findOne(id)
   // }
 
-  @Post('login')
-  async login(@Body(ValidationPipe) loginDto:LoginDto) {
-    return this.usersService.login_user(loginDto);
-  }//WHITELISTING?
+  // @Post('login')
+  // async login(@Body(ValidationPipe) loginDto:LoginDto) {
+  //   return this.usersService.login_user(loginDto);
+  // }//WHITELISTING?
 
   @Patch(':id') 
   update_user(@Param('id', ParseIntPipe) id:number, @Body(ValidationPipe) updateUserDto: UpdateUserDto) {
